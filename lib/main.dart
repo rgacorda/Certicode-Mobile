@@ -34,7 +34,7 @@ void main(){
 
 
 final GoRouter _router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/home',
   routes: [
     ShellRoute(
       builder: (context, state, child){
