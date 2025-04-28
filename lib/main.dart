@@ -12,7 +12,7 @@ import 'package:certicode_mobile/features/home/widgets/search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
+import "package:certicode_mobile/features/auth/view/splash_Screen.dart";
 
 
 void main(){
@@ -34,8 +34,12 @@ void main(){
 
 
 final GoRouter _router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/home',
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child){
         return HomePage(child: child,);
