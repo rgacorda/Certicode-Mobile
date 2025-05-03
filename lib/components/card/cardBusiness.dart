@@ -1,14 +1,27 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:certicode_mobile/features/home/models/seminar_model.dart';
 import 'package:certicode_mobile/features/home/widgets/seminar.dart';
 import 'package:flutter/material.dart';
 import 'package:certicode_mobile/utils/app_colors.dart';
 
 class CardBusiness extends StatelessWidget {
-  final String title;
-  final String image;
-  final String location;
-  final String category;
+  final Seminar seminar;
 
-const CardBusiness({ Key? key, required this.title, required this.image, required this.location, required this.category }) : super(key: key);
+  // final int id;
+  // final String title;
+  // final String image;
+  // final String location;
+  // final String category;
+
+const CardBusiness({ Key? key,
+  required this.seminar
+
+  // required this.id,
+  // required this.title,
+  // required this.image,
+  // required this.location,
+  // required this.category
+}) : super(key: key);
 
   @override
   Widget build(BuildContext context){
@@ -18,7 +31,7 @@ const CardBusiness({ Key? key, required this.title, required this.image, require
           onTap: () {
             Navigator.push(
               context, MaterialPageRoute(
-                builder: (context) => ViewSeminar(image: image),
+                builder: (context) => ViewSeminar(seminar: seminar,),
               ),
             );
           },
@@ -36,12 +49,25 @@ const CardBusiness({ Key? key, required this.title, required this.image, require
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-                      child: Image(
-                        image: AssetImage(image),
+                      child: CachedNetworkImage(
+                        imageUrl: seminar.seminarImage,
+                        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Image.asset( // Icon(Icons.error),
+                          'assets/images/sample.jpg',
+                          fit: BoxFit.cover,
+                        ),
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
                       ),
+
+                      // child: Image(
+                      //   image: AssetImage(seminar.seminarImage),
+                      //   height: 200,
+                      //   width: double.infinity,
+                      //   fit: BoxFit.cover,
+                      // ),
+
                     ),
                     Positioned(
                       top: 10,
@@ -75,7 +101,8 @@ const CardBusiness({ Key? key, required this.title, required this.image, require
                           children: [
                             Expanded(
                               child: Text(
-                                '$title - $location',
+                                // '$title - $location',
+                                '${seminar.nameOfSeminar} - ${seminar.location}',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
@@ -107,7 +134,8 @@ const CardBusiness({ Key? key, required this.title, required this.image, require
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            category,
+                            // category,
+                            seminar.topics,
                             style: TextStyle(
                               fontSize: 11
                             ),

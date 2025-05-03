@@ -1,13 +1,19 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:certicode_mobile/components/button/button.dart';
 import 'package:certicode_mobile/utils/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../models/seminar_model.dart';
+
 class ViewSeminar extends StatelessWidget {
-  final String image;
+  final Seminar seminar;
 
 
-  const ViewSeminar({super.key, required this.image});
+  const ViewSeminar({super.key, 
+    // required this.image, required this.seminarId
+    required this.seminar
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +44,14 @@ class ViewSeminar extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                   children: [
-                    Image.asset( image ,fit: BoxFit.cover,),
+                    CachedNetworkImage(
+                      imageUrl: seminar.seminarImage,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) =>
+                          Image.asset('assets/images/sample.jpg', fit: BoxFit.cover,) /*Icon(Icons.error)*/,
+                    ),
+                    // Image.asset(image, fit: BoxFit.cover,), // dummy image
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -67,7 +80,7 @@ class ViewSeminar extends StatelessWidget {
                                 child: Row(
                                   children: [
                                     Text(
-                                      'Category',
+                                      seminar.topics, // Category or topics
                                       style: TextStyle(color: Colors.white, fontSize: 15),
                                     ),
                                   ],
@@ -77,7 +90,7 @@ class ViewSeminar extends StatelessWidget {
                           ),
                           SizedBox(height: 8,),
                           Text(
-                            'Leadership in Tech',
+                            seminar.nameOfSeminar, // name of seminar
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -89,11 +102,11 @@ class ViewSeminar extends StatelessWidget {
                             children: [
                               Icon(CupertinoIcons.calendar, color: Colors.white60, size: 20,),
                               SizedBox(width: 4,),
-                              Text('Date', style: TextStyle(color: Colors.white60)),
+                              Text(seminar.date, style: TextStyle(color: Colors.white60)),
                               SizedBox(width: 12,),
                               Icon(CupertinoIcons.location_solid, color: Colors.white60, size: 20,),
                               SizedBox(width: 4,),
-                              Text('Location', style: TextStyle(color: Colors.white60),),
+                              Text(seminar.location, style: TextStyle(color: Colors.white60),),
                             ],
                           ),
                         ],
@@ -148,17 +161,25 @@ class ViewSeminar extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                    // 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                    seminar.description, // description of seminar
                   ),
                   SizedBox(height: 20),
                   ListTile(
                     contentPadding: EdgeInsets.only(left: 0),
-                    leading: CircleAvatar(
-                      backgroundImage: AssetImage(image),
-                      maxRadius: 28,
+                    leading: CachedNetworkImage(
+                      imageUrl: seminar.speakerImage,
+                      imageBuilder: (context, imageProvider) => CircleAvatar(
+                        backgroundImage: imageProvider,
+                      ),
+                      placeholder: (context, url) => CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => CircleAvatar(
+                        backgroundImage: AssetImage('assets/images/logo_notext.png'),
+                      ),
                     ),
-                    title: Text('Lorem Ipsum'),
-                    subtitle: Text('Full-stack Developer & Instructor'),
+                    // title: Text('Lorem Ipsum'),
+                    title: Text(seminar.speakerName), //speaker
+                    subtitle: Text(seminar.organizationName), // org name
                     trailing: ElevatedButton(onPressed: (){},
                       style: ButtonStyle(
                         backgroundColor: MaterialStatePropertyAll(AppColors.primary),

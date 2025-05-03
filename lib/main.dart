@@ -43,7 +43,7 @@ final GoRouter _router = GoRouter(
       routes: [
         GoRoute(
           path: '/home',
-          builder: (context, state) => const Home(),
+          builder: (context, state) => Home(),
         ),
         GoRoute(
           path: '/favourites',
