@@ -13,9 +13,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:certicode_mobile/features/profile/edit_profile.dart';
+import 'package:certicode_mobile/features/profile/view_profile.dart';
 
-
-void main(){
+void main() {
   runApp(
     BlocProvider(
       create: (_) => NavigationCubit(),
@@ -27,20 +28,38 @@ void main(){
           );
         },
       ),
-    )
+    ),
   );
 }
-
-
 
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   routes: [
     ShellRoute(
-      builder: (context, state, child){
-        return HomePage(child: child,);
+      builder: (context, state, child) {
+        return HomePage(child: child);
       },
       routes: [
+        GoRoute(
+          path: '/getstarted',
+          builder: (context, state) => const GetStarted(),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ViewProfile(),
+        ),
+        GoRoute(
+          path: '/editProfile',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return EditProfileScreen(
+              name: extra['name'] ?? 'Default Name',
+              email: extra['email'] ?? 'Default Email',
+              profileImagePath: extra['profileImagePath'],
+              profileImageUrl: extra['profile_image'], // <-- this must be a full URL
+            );
+          },
+        ),
         GoRoute(
           path: '/home',
           builder: (context, state) => const Home(),
@@ -57,10 +76,10 @@ final GoRouter _router = GoRouter(
           path: '/account',
           builder: (context, state) => const Account(),
         ),
-      ]
+      ],
     ),
     ShellRoute(
-      builder: (context, state, child){
+      builder: (context, state, child) {
         return AuthPage(child: child);
       },
       routes: [
@@ -79,8 +98,8 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: '/register_details',
           builder: (context, state) => const RegisterDetails(),
-        )
-      ]
-    )
+        ),
+      ],
+    ),
   ],
 );
