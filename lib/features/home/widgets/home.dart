@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:certicode_mobile/components/card/cardBusiness.dart';
@@ -6,7 +8,12 @@ import 'package:certicode_mobile/components/dropdown/dropdown_sort.dart';
 import 'package:certicode_mobile/components/search/searchbar.dart';
 import 'package:certicode_mobile/utils/app_colors.dart';
 import 'package:certicode_mobile/utils/responsive.dart';
+import 'package:certicode_mobile/services/seminar_service.dart';
+import 'package:certicode_mobile/features/home/models/seminar_model.dart';
 
+
+
+String baseUrl = 'http://10.0.0.2:8000/storage/';
 // Categories to be used in the Card
 enum Category {
   hotel,
@@ -82,7 +89,22 @@ List<Map<String, dynamic>> sortList = [
 
 
 class Home extends StatelessWidget {
-const Home({ Key? key }) : super(key: key);
+  final SeminarService seminarService = SeminarService();
+
+  Home({ Key? key }) : super(key: key);
+
+/*@override
+_HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  late Future<List<Seminar>> seminarsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    seminarsFuture = fetchSeminars(); // Fetch seminars from server
+  }*/
 
   @override
   Widget build(BuildContext context){
@@ -184,20 +206,38 @@ const Home({ Key? key }) : super(key: key);
               ),
             ),
           ),
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 1,
-              childAspectRatio: ResponsiveDesign.screenHeight(context)/650,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 40,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return CardBusiness(title: 'Leadership in Tech', image: 'assets/images/sample.jpg', location: 'location', category: 'Leadership',);
+
+          SliverToBoxAdapter(
+            child: FutureBuilder<List<Seminar>>(
+              future: seminarService.fetchSeminars(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No seminars found.'));
+                } else {
+                  List<Seminar> seminars = snapshot.data!;
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1,
+                      childAspectRatio: ResponsiveDesign.screenHeight(context) / 650,
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 40,
+                    ),
+                    itemCount: seminars.length,
+                    itemBuilder: (context, index) {
+                      return CardBusiness(seminar: seminars[index]);
+                    },
+                  );
+                }
               },
-              childCount: 10,
             ),
-          )
+          ),
+
         ],
       ),
     );

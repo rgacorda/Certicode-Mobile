@@ -1,23 +1,30 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../components/card/cardBusiness.dart';
 import '../../../components/search/searchbar.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/responsive.dart';
+import 'package:certicode_mobile/features/home/models/seminar_model.dart';
+
+import '../bloc/favorites/favorites_event.dart';
+import '../bloc/favorites/favorites_state.dart';
+import '../bloc/favorites/favoritess_bloc.dart';
 
 class Favorites extends StatelessWidget {
-  const Favorites({ Key? key }) : super(key: key);
+  Favorites({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // SliverAppBar stays the same
+          // SliverAppBar
           SliverAppBar(
             backgroundColor: AppColors.primary,
             expandedHeight: 120.0,
             floating: true,
+            pinned: true,
             title: Row(children: [
               Expanded(
                 child: Text(
@@ -37,7 +44,6 @@ class Favorites extends StatelessWidget {
                 ),
               )
             ]),
-            pinned: true,
             bottom: PreferredSize(
               preferredSize: Size.fromHeight(65),
               child: Container(
@@ -48,7 +54,7 @@ class Favorites extends StatelessWidget {
             ),
           ),
 
-          // Liked Seminars title
+          // Section Title
           SliverToBoxAdapter(
             child: Container(
               padding: EdgeInsets.all(12),
@@ -62,27 +68,32 @@ class Favorites extends StatelessWidget {
             ),
           ),
 
-          // Seminar Grid
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 1,
-              childAspectRatio:
-              ResponsiveDesign.screenHeight(context) / 650,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 40,
-            ),
-            delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                return CardBusiness(
-                  title: 'Leadership in Tech',
-                  image: 'assets/images/sample.jpg',
-                  location: 'location',
-                  category: 'Leadership',
+          // BLoC Builder to display favorite seminars
+          BlocBuilder<FavoritesBloc, FavoritesState>(
+            builder: (context, state) {
+              final favoriteSeminars = state.favorites;
+
+              if (favoriteSeminars.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('No favorite seminars found.'),
+                    ),
+                  ),
                 );
-              },
-              childCount: 10,
-            ),
-          )
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                    return CardBusiness(seminar: favoriteSeminars[index]);
+                  },
+                  childCount: favoriteSeminars.length,
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../components/search/searchbar.dart';
 import '../../../utils/app_colors.dart';
+import '../../features/home/models/seminar_model.dart';
+import '../../services/seminar_service.dart';
+import '../card/cardBusiness.dart';
 
 class SearchInput extends StatefulWidget {
   const SearchInput({Key? key}) : super(key: key);
@@ -11,19 +14,95 @@ class SearchInput extends StatefulWidget {
 }
 
 class _SearchInputState extends State<SearchInput> {
-  List<String> recentSearches = ['Web design', 'Graphics design'];
+  List<Seminar> seminars = [];
+  TextEditingController searchController = TextEditingController();
+  bool isLoading = false;
+  String errorMessage = '';
+  List<String> recentSearches = ['Git', 'Javascript']; // Optional defaults
 
-  void _removeItem(String title) {
+  @override
+  void initState() {
+    super.initState();
+    _fetchAllSeminars();
+  }
+
+  Future<void> _fetchAllSeminars() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      final data = await SeminarService().fetchSeminars();
+      setState(() {
+        seminars = data;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Failed to load seminars';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _liveSearch(String query) async {
+    await _searchSeminars(query, saveToRecent: false);
+  }
+
+  Future<void> _finalSearch(String query) async {
+    await _searchSeminars(query, saveToRecent: true);
+  }
+
+
+  Future<void> _searchSeminars(String query, {bool saveToRecent = false}) async {
+    if (query.isEmpty) {
+      _fetchAllSeminars();
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      final data = await SeminarService().searchSeminars(query);
+      setState(() {
+        seminars = data;
+
+        if (saveToRecent && !recentSearches.contains(query)) {
+          recentSearches.insert(0, query);
+          if (recentSearches.length > 5) recentSearches.removeLast();
+        }
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Search failed';
+        seminars = [];
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+
+  void _removeSearch(String title) {
     setState(() {
       recentSearches.remove(title);
     });
   }
 
-  void _clearAll() {
+  void _clearAllSearches() {
     setState(() {
       recentSearches.clear();
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -38,36 +117,35 @@ class _SearchInputState extends State<SearchInput> {
             title: Row(
               children: [
                 Expanded(
-                  child: Searchbar(),
+                  child: Searchbar(
+                    controller: searchController,
+                    onChanged: _liveSearch,
+                    onSubmitted: _finalSearch,
+                  ),
                 ),
               ],
             ),
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(0),
-              child: SizedBox.shrink(),
-            ),
           ),
-
-          // Recent Searches
           SliverList(
             delegate: SliverChildListDelegate(
               [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Recent Searches',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                // Recent Searches Section
+                if (recentSearches.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Recent Searches',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      if (recentSearches.isNotEmpty)
                         GestureDetector(
-                          onTap: _clearAll,
+                          onTap: _clearAllSearches,
                           child: Text(
                             'Clear All',
                             style: TextStyle(
@@ -77,10 +155,42 @@ class _SearchInputState extends State<SearchInput> {
                             ),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                ...recentSearches.map((title) => _buildRecentItem(title)).toList(),
+                ...recentSearches.map((title) => ListTile(
+                  leading: Icon(Icons.history, color: Colors.black54),
+                  title: Text(title, style: TextStyle(color: Colors.black87)),
+                  trailing: IconButton(
+                    icon: Icon(Icons.close, color: Colors.black54),
+                    onPressed: () => _removeSearch(title),
+                  ),
+                  onTap: () {
+                    searchController.text = title;
+                    _searchSeminars(title);
+                  },
+                )),
+
+                // Loading, Error, or Results
+                if (isLoading)
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                if (errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      errorMessage,
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                if (!isLoading && seminars.isEmpty && errorMessage.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text('No seminars found.'),
+                  ),
+                ...seminars.map((seminar) => CardBusiness(seminar: seminar)).toList(),
               ],
             ),
           ),
@@ -88,21 +198,5 @@ class _SearchInputState extends State<SearchInput> {
       ),
     );
   }
-
-  Widget _buildRecentItem(String title) {
-    return ListTile(
-      leading: Icon(Icons.history, color: Colors.black54),
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.black54),
-      ),
-      trailing: IconButton(
-        icon: Icon(Icons.close, color: Colors.black54),
-        onPressed: () => _removeItem(title),
-      ),
-      onTap: () {
-        // Optional: handle tap on recent search
-      },
-    );
-  }
 }
+

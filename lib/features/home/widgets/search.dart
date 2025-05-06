@@ -6,9 +6,16 @@ import '../../../components/search/searchbar.dart';
 import '../../../components/search/SearchInput.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/responsive.dart';
+import 'package:certicode_mobile/services/seminar_service.dart';
+import 'package:certicode_mobile/features/home/models/seminar_model.dart';
 
 class Search extends StatelessWidget {
-  const Search({Key? key}) : super(key: key);
+  final SeminarService seminarService = SeminarService();
+   Search({Key? key}) : super(key: key);
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -97,26 +104,36 @@ class Search extends StatelessWidget {
           ),
 
           // Seminar Grid
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 1,
-              childAspectRatio:
-              ResponsiveDesign.screenHeight(context) / 650,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 40,
-            ),
-            delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                return CardBusiness(
-                  title: 'Leadership in Tech',
-                  image: 'assets/images/sample.jpg',
-                  location: 'location',
-                  category: 'Leadership',
-                );
+          SliverToBoxAdapter(
+            child: FutureBuilder<List<Seminar>>(
+              future: seminarService.fetchSeminars(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No seminars found.'));
+                } else {
+                  List<Seminar> seminars = snapshot.data!;
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1,
+                      childAspectRatio: ResponsiveDesign.screenHeight(context) / 650,
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 40,
+                    ),
+                    itemCount: seminars.length,
+                    itemBuilder: (context, index) {
+                      return CardBusiness(seminar: seminars[index]);
+                    },
+                  );
+                }
               },
-              childCount: 10,
             ),
-          )
+          ),
         ],
       ),
     );
