@@ -1,5 +1,5 @@
-import 'package:certicode_mobile/features/home/models/seminar_model.dart';
-import 'package:certicode_mobile/services/seminar_service.dart';
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:certicode_mobile/components/card/cardBusiness.dart';
@@ -8,7 +8,12 @@ import 'package:certicode_mobile/components/dropdown/dropdown_sort.dart';
 import 'package:certicode_mobile/components/search/searchbar.dart';
 import 'package:certicode_mobile/utils/app_colors.dart';
 import 'package:certicode_mobile/utils/responsive.dart';
+import 'package:certicode_mobile/services/seminar_service.dart';
+import 'package:certicode_mobile/features/home/models/seminar_model.dart';
 
+
+
+String baseUrl = 'http://10.0.0.2:8000/storage/';
 // Categories to be used in the Card
 enum Category {
   hotel,

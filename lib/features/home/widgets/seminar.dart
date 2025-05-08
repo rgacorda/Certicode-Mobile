@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:certicode_mobile/components/button/button.dart';
 import 'package:certicode_mobile/utils/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../bloc/favorites/favorites_event.dart';
+import '../bloc/favorites/favorites_state.dart';
+import '../bloc/favorites/favoritess_bloc.dart';
 import '../models/seminar_model.dart';
 
 class ViewSeminar extends StatelessWidget {
@@ -116,20 +119,29 @@ class ViewSeminar extends StatelessWidget {
               ),
             ),
             actions: [
-              Container(
-                margin: EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.7),
-                  shape: BoxShape.circle
-                ),
-                child: IconButton(
-                    onPressed: (){
+              GestureDetector(
+                onTap: () {
+                  context.read<FavoritesBloc>().add(ToggleFavoriteEvent(seminar));
+                },
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  margin: EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.7),
+                      shape: BoxShape.circle
+                  ),
+                  child: BlocBuilder<FavoritesBloc, FavoritesState>(
+                    builder: (context, state) {
+                      // Check if the seminar is in the favorite list
+                      final isFavorite = state.favorites.any((s) => s.id == seminar.id);
+                      return Icon(
+                        isFavorite ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+                        color: isFavorite ? Colors.red : AppColors.primary,
+                        size: 25,
+                      );
                     },
-                    icon: Icon(
-                      CupertinoIcons.heart,
-                      color: AppColors.primary,
-                      size: 23,
-                    )
+                  ),
                 ),
               ),
               Container(

@@ -12,13 +12,17 @@ import 'package:certicode_mobile/features/home/widgets/search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import "package:certicode_mobile/features/auth/view/splash_Screen.dart";
+import 'features/home/bloc/favorites/favoritess_bloc.dart';
 
 
-
-void main(){
+void main() {
   runApp(
-    BlocProvider(
-      create: (_) => NavigationCubit(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => NavigationCubit()),
+        BlocProvider(create: (_) => FavoritesBloc()),
+      ],
       child: Builder(
         builder: (context) {
           return MaterialApp.router(
@@ -27,7 +31,7 @@ void main(){
           );
         },
       ),
-    )
+    ),
   );
 }
 
@@ -36,6 +40,10 @@ void main(){
 final GoRouter _router = GoRouter(
   initialLocation: '/home',
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child){
         return HomePage(child: child,);
@@ -43,15 +51,15 @@ final GoRouter _router = GoRouter(
       routes: [
         GoRoute(
           path: '/home',
-          builder: (context, state) => Home(),
+          builder: (context, state) =>  Home(),
         ),
         GoRoute(
           path: '/favourites',
-          builder: (context, state) => const Favorites(),
+          builder: (context, state) =>   Favorites(),
         ),
         GoRoute(
           path: '/search',
-          builder: (context, state) => const Search(),
+          builder: (context, state) =>   Search(),
         ),
         GoRoute(
           path: '/account',

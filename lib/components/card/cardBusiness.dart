@@ -3,25 +3,20 @@ import 'package:certicode_mobile/features/home/models/seminar_model.dart';
 import 'package:certicode_mobile/features/home/widgets/seminar.dart';
 import 'package:flutter/material.dart';
 import 'package:certicode_mobile/utils/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../features/home/bloc/favorites/favorites_event.dart';
+import '../../features/home/bloc/favorites/favorites_state.dart';
+import '../../features/home/bloc/favorites/favoritess_bloc.dart';
 
 class CardBusiness extends StatelessWidget {
   final Seminar seminar;
+  //final String title;
+  //final String image;
+  //final String location;
+  //final String category;
 
-  // final int id;
-  // final String title;
-  // final String image;
-  // final String location;
-  // final String category;
-
-const CardBusiness({ Key? key,
-  required this.seminar
-
-  // required this.id,
-  // required this.title,
-  // required this.image,
-  // required this.location,
-  // required this.category
-}) : super(key: key);
+const CardBusiness({ Key? key, required this.seminar }) : super(key: key);
 
   @override
   Widget build(BuildContext context){
@@ -31,8 +26,8 @@ const CardBusiness({ Key? key,
           onTap: () {
             Navigator.push(
               context, MaterialPageRoute(
-                builder: (context) => ViewSeminar(seminar: seminar,),
-              ),
+              builder: (context) => ViewSeminar(seminar: seminar,),
+            ),
             );
           },
           child: Card(
@@ -51,29 +46,23 @@ const CardBusiness({ Key? key,
                       borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
                       child: CachedNetworkImage(
                         imageUrl: seminar.seminarImage,
-                        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => Image.asset( // Icon(Icons.error),
-                          'assets/images/sample.jpg',
-                          fit: BoxFit.cover,
-                        ),
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Image.asset( // Icon(Icons.error),
+                        'assets/images/sample.jpg',
+                        fit: BoxFit.cover,
+                        )
                       ),
-
-                      // child: Image(
-                      //   image: AssetImage(seminar.seminarImage),
-                      //   height: 200,
-                      //   width: double.infinity,
-                      //   fit: BoxFit.cover,
-                      // ),
-
                     ),
                     Positioned(
                       top: 10,
                       right: 10,
                       child: GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          context.read<FavoritesBloc>().add(ToggleFavoriteEvent(seminar));
+                          },
                         child: Container(
                           width: 25,
                           height: 25,
@@ -81,10 +70,16 @@ const CardBusiness({ Key? key,
                             shape: BoxShape.circle,
                             color: AppColors.defaultBG(context),
                           ),
-                          child: Icon(
-                            Icons.favorite_border,
-                            color: Colors.black,
-                            size: 16,
+                          child: BlocBuilder<FavoritesBloc, FavoritesState>(
+                            builder: (context, state) {
+                              // Check if the seminar is in the favorite list
+                              final isFavorite = state.favorites.any((s) => s.id == seminar.id);
+                              return Icon(
+                                isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: isFavorite ? Colors.red : Colors.black,
+                                size: 16,
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -101,14 +96,14 @@ const CardBusiness({ Key? key,
                           children: [
                             Expanded(
                               child: Text(
-                                // '$title - $location',
-                                '${seminar.nameOfSeminar} - ${seminar.location}',
+                                //'$title - $location',
+                                  '${seminar.nameOfSeminar} - ${seminar.location}',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 overflow: TextOverflow.ellipsis,
-                                maxLines: 1, 
+                                maxLines: 1,
                               ),
                             ),
                             Spacer(),
@@ -134,7 +129,7 @@ const CardBusiness({ Key? key,
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            // category,
+                            //category,
                             seminar.topics,
                             style: TextStyle(
                               fontSize: 11

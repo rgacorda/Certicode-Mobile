@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../features/home/models/seminar_model.dart';
+import 'package:certicode_mobile/features/home/models/seminar_model.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 
 class SeminarService {
@@ -19,8 +19,8 @@ class SeminarService {
     try {
       final baseUrl = await _getBaseUrl();
       final response = await http.get(Uri.parse('$baseUrl/api/seminars'))
-      .timeout(Duration(seconds: 5)); // adjust when there's image
-      
+          .timeout(Duration(seconds: 5)); // adjust when there's image
+
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((item) => Seminar.fromJson(item, baseUrl)).toList();
@@ -32,4 +32,18 @@ class SeminarService {
       throw Exception('Failed to load seminar or API is not available');
     }
   }
+
+  Future<List<Seminar>> searchSeminars(String query) async {
+    final baseUrl = await _getBaseUrl();
+    final response = await http.get(Uri.parse('$baseUrl/api/seminars?search=$query'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => Seminar.fromJson(item, baseUrl)).toList();
+    } else {
+      throw Exception('Failed to search seminars');
+    }
+  }
+
 }
+

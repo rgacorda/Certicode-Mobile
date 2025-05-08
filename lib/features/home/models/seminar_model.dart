@@ -1,4 +1,6 @@
-class Seminar {
+import 'package:equatable/equatable.dart';
+
+class Seminar extends Equatable {
   final int id;
   final String nameOfSeminar;
   final String topics;
@@ -52,4 +54,8 @@ class Seminar {
       updatedAt: json['updated_at'],
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id];
 }
